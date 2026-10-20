@@ -2,10 +2,9 @@
 
 A PowerToys Command Palette **Dock band** that shows your Claude session (5 h) and weekly (7 d) usage.
 
-```
-(◔) 5h 40%   (◔) 7d 12%   (↻) 15:40
-    Session      Weekly       Updated 13:28
-```
+<p align="center">
+  <img src="docs/dock-band.png" alt="Dock band: 5h ring at 49%, 7d ring at 14%, reset timer 15:40" width="298">
+</p>
 
 - **Ring buttons** (one per quota): the ring fills to the % used and is colored by level: blue < 60 %, amber 60–84 %, red ≥ 85 %. Dock text can't be colored, so the ring carries it. Click to open the detail page (all limits, reset times); opening it refreshes if the data is older than 30 s.
 - **Timer button**: the 5-hour reset time. Click to **refresh now**. When a limit is maxed out, it switches to a countdown ("in 1 h 12 min").
