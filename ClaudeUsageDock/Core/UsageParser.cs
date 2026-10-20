@@ -42,8 +42,10 @@ internal static class UsageParser
             var rawReset = ReadString(value, "resets_at");
             var reset = ParseTime(rawReset);
 
-            // Hide placeholder fields that are neither a known period nor have a reset window.
-            if (reset is null && !IsKnownPeriod(prop.Name))
+            // Only show limits we understand: five_hour*, seven_day*. The endpoint also returns
+            // internal codename fields (e.g. "iguana_necktie") with no public meaning; hide those,
+            // and never let them lend their name to scoped limits below.
+            if (!IsKnownPeriod(prop.Name))
             {
                 continue;
             }
@@ -52,7 +54,7 @@ internal static class UsageParser
             seenKeys.Add(prop.Name);
             if (!string.IsNullOrEmpty(rawReset))
             {
-                resetToKey.TryAdd(rawReset, prop.Name);
+                resetToKey.TryAdd(rawReset, prop.Name); // how scoped limits find their period prefix
             }
         }
 
