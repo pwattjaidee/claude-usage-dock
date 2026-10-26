@@ -34,4 +34,5 @@ internal static class Ids
     public const string Detail = Provider + ".detail";
     public const string Refresh = Provider + ".refresh";
     public const string OpenUsagePage = Provider + ".openusagepage";
+    public const string OpenTerminal = Provider + ".openterminal";
 }

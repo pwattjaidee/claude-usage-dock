@@ -13,14 +13,14 @@ internal sealed partial class QuotaBandItem : ListItem
     private readonly string _key;
     private IconInfo? _icon;
 
-    public QuotaBandItem(string key, string subtitle, UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage)
+    public QuotaBandItem(string key, string subtitle, UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage, OpenClaudeTerminalCommand terminal)
         : base(detail)
     {
         _key = key;
         Title = key == Quota.SessionKey ? "5h" : "7d";
         Subtitle = subtitle;
         Icon = _icon = Icons.Ring(0);
-        MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage)];
+        MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage), new CommandContextItem(terminal)];
     }
 
     public string Key => _key;
@@ -49,13 +49,13 @@ internal sealed partial class StatusBandItem : ListItem
 {
     private IconInfo? _icon;
 
-    public StatusBandItem(UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage)
+    public StatusBandItem(UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage, OpenClaudeTerminalCommand terminal)
         : base(detail)
     {
         Title = "Claude";
         Subtitle = "Loading…";
         Icon = _icon = Icons.Gauge;
-        MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage)];
+        MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage), new CommandContextItem(terminal)];
     }
 
     public void Render(UsageSnapshot s, TimeZoneInfo tz)
@@ -87,13 +87,13 @@ internal sealed partial class StatusBandItem : ListItem
 /// </summary>
 internal sealed partial class ResetBandItem : ListItem
 {
-    public ResetBandItem(RefreshCommand refresh, UsageDetailPage detail, OpenUrlCommand openUsage)
+    public ResetBandItem(RefreshCommand refresh, UsageDetailPage detail, OpenUrlCommand openUsage, OpenClaudeTerminalCommand terminal)
         : base(refresh)
     {
         Title = "--:--";
         Subtitle = "Refresh";
         Icon = Icons.Refresh;
-        MoreCommands = [new CommandContextItem(detail), new CommandContextItem(openUsage)];
+        MoreCommands = [new CommandContextItem(detail), new CommandContextItem(openUsage), new CommandContextItem(terminal)];
     }
 
     public void Render(UsageSnapshot s, DateTimeOffset now, TimeZoneInfo tz)
@@ -129,13 +129,13 @@ internal sealed partial class UsageBandController : IDisposable
     private readonly object _renderLock = new();
     private IListItem[] _current = [];
 
-    public UsageBandController(UsageMonitor monitor, UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage)
+    public UsageBandController(UsageMonitor monitor, UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage, OpenClaudeTerminalCommand terminal)
     {
         _monitor = monitor;
-        _session = new QuotaBandItem(Quota.SessionKey, "Session", detail, refresh, openUsage);
-        _weekly = new QuotaBandItem(Quota.WeeklyKey, "Weekly", detail, refresh, openUsage);
-        _status = new StatusBandItem(detail, refresh, openUsage);
-        _reset = new ResetBandItem(refresh, detail, openUsage);
+        _session = new QuotaBandItem(Quota.SessionKey, "Session", detail, refresh, openUsage, terminal);
+        _weekly = new QuotaBandItem(Quota.WeeklyKey, "Weekly", detail, refresh, openUsage, terminal);
+        _status = new StatusBandItem(detail, refresh, openUsage, terminal);
+        _reset = new ResetBandItem(refresh, detail, openUsage, terminal);
 
         _current = [_status, _reset];
         Band = new WrappedDockItem(_current, Ids.Band, "Claude usage");

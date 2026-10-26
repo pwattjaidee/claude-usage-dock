@@ -27,10 +27,11 @@ public sealed partial class ClaudeUsageDockCommandsProvider : CommandProvider
             Name = "Open usage page",
             Icon = Icons.OpenInBrowser,
         };
-        var detail = new UsageDetailPage(_monitor, refresh, openUsage);
+        var terminal = new OpenClaudeTerminalCommand();
+        var detail = new UsageDetailPage(_monitor, refresh, openUsage, terminal);
 
         // The dock band: [ring 5h] [ring 7d] [timer], or [status] [timer] when there's no data.
-        _bandController = new UsageBandController(_monitor, detail, refresh, openUsage);
+        _bandController = new UsageBandController(_monitor, detail, refresh, openUsage, terminal);
         _band = _bandController.Band;
 
         // Palette entries (Win+Alt+Space): "Claude usage" and "Refresh Claude usage".
@@ -40,12 +41,17 @@ public sealed partial class ClaudeUsageDockCommandsProvider : CommandProvider
             {
                 Title = "Claude usage",
                 Subtitle = "Session and weekly limits",
-                MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage)],
+                MoreCommands = [new CommandContextItem(refresh), new CommandContextItem(openUsage), new CommandContextItem(terminal)],
             },
             new CommandItem(refresh)
             {
                 Title = "Refresh Claude usage",
                 Subtitle = "Fetch the latest numbers now",
+            },
+            new CommandItem(terminal)
+            {
+                Title = "Sign in with Claude Code",
+                Subtitle = "Open a terminal running claude",
             },
         ];
 

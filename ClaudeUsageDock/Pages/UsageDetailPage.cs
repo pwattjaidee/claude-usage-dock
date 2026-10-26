@@ -18,12 +18,14 @@ internal sealed partial class UsageDetailPage : ListPage
     private readonly UsageMonitor _monitor;
     private readonly RefreshCommand _refresh;
     private readonly OpenUrlCommand _openUsage;
+    private readonly OpenClaudeTerminalCommand _terminal;
 
-    public UsageDetailPage(UsageMonitor monitor, RefreshCommand refresh, OpenUrlCommand openUsage)
+    public UsageDetailPage(UsageMonitor monitor, RefreshCommand refresh, OpenUrlCommand openUsage, OpenClaudeTerminalCommand terminal)
     {
         _monitor = monitor;
         _refresh = refresh;
         _openUsage = openUsage;
+        _terminal = terminal;
 
         Id = Ids.Detail;
         Name = "Open details";
@@ -53,10 +55,10 @@ internal sealed partial class UsageDetailPage : ListPage
 
         if (s.NeedsSignIn)
         {
-            items.Add(new ListItem(new NoOpCommand())
+            items.Add(new ListItem(_terminal)
             {
                 Title = s.Message ?? "Sign in to Claude Code",
-                Subtitle = "Run claude in a terminal and log in. This page picks up the new sign-in by itself.",
+                Subtitle = "Click to open Claude Code in a terminal. This page picks up the new sign-in by itself.",
                 Icon = Icons.GaugeSignIn,
             });
         }
@@ -85,7 +87,7 @@ internal sealed partial class UsageDetailPage : ListPage
                     Subtitle = Format.Bar(q.Utilization) + "   " + Format.ResetLong(q, now, tz),
                     Icon = Icons.ForLevel(q.Level),
                     Tags = [PercentTag(q)],
-                    MoreCommands = [new CommandContextItem(_refresh), new CommandContextItem(_openUsage)],
+                    MoreCommands = [new CommandContextItem(_refresh), new CommandContextItem(_openUsage), new CommandContextItem(_terminal)],
                 });
             }
         }
