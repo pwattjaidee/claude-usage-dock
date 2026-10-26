@@ -43,7 +43,7 @@ internal sealed partial class QuotaBandItem : ListItem
 }
 
 /// <summary>
-/// Shown instead of the rings when there's no data: "Sign in", "Claude" (loading), "Offline".
+/// Shown instead of the rings when there's no data and no sign-in is needed: "Claude" (loading), "Offline".
 /// </summary>
 internal sealed partial class StatusBandItem : ListItem
 {
@@ -82,6 +82,22 @@ internal sealed partial class StatusBandItem : ListItem
 }
 
 /// <summary>
+/// Shown instead of the rings when Claude Code needs a sign-in: "Sign in" / "Open Claude Code".
+/// Left-click opens a terminal running claude. Right-click: Open details / Refresh now / Open usage page.
+/// </summary>
+internal sealed partial class SignInBandItem : ListItem
+{
+    public SignInBandItem(OpenClaudeTerminalCommand terminal, UsageDetailPage detail, RefreshCommand refresh, OpenUrlCommand openUsage)
+        : base(terminal)
+    {
+        Title = "Sign in";
+        Subtitle = "Open Claude Code";
+        Icon = Icons.GaugeSignIn;
+        MoreCommands = [new CommandContextItem(detail), new CommandContextItem(refresh), new CommandContextItem(openUsage)];
+    }
+}
+
+/// <summary>
 /// Timer button: refresh icon + session reset time ("15:40"), or a countdown when a limit is maxed.
 /// Subtitle: "Updated 13:28" / "Updating…" / "Stale · 13:28". Click: refresh now.
 /// </summary>
@@ -115,7 +131,8 @@ internal sealed partial class ResetBandItem : ListItem
 /// <summary>
 /// Owns the dock band and decides which buttons it shows:
 ///   data:      [ring 5h] [ring 7d] [timer]
-///   no data:   [status]           [timer]
+///   signed out:[sign in]          [timer]   (left-click opens a terminal running claude)
+///   no data:   [status]           [timer]   (loading / offline)
 /// Re-renders on every monitor change and every 30 s locally (countdown), with no network call.
 /// </summary>
 internal sealed partial class UsageBandController : IDisposable
@@ -124,6 +141,7 @@ internal sealed partial class UsageBandController : IDisposable
     private readonly QuotaBandItem _session;
     private readonly QuotaBandItem _weekly;
     private readonly StatusBandItem _status;
+    private readonly SignInBandItem _signIn;
     private readonly ResetBandItem _reset;
     private readonly Timer _tick;
     private readonly object _renderLock = new();
@@ -135,6 +153,7 @@ internal sealed partial class UsageBandController : IDisposable
         _session = new QuotaBandItem(Quota.SessionKey, "Session", detail, refresh, openUsage, terminal);
         _weekly = new QuotaBandItem(Quota.WeeklyKey, "Weekly", detail, refresh, openUsage, terminal);
         _status = new StatusBandItem(detail, refresh, openUsage, terminal);
+        _signIn = new SignInBandItem(terminal, detail, refresh, openUsage);
         _reset = new ResetBandItem(refresh, detail, openUsage, terminal);
 
         _current = [_status, _reset];
@@ -160,7 +179,11 @@ internal sealed partial class UsageBandController : IDisposable
                 var tz = TimeZoneInfo.Local;
                 var wanted = new List<IListItem>(3);
 
-                if (!s.NeedsSignIn && (s.Session is not null || s.Weekly is not null))
+                if (s.NeedsSignIn)
+                {
+                    wanted.Add(_signIn); // left-click opens the terminal to sign in
+                }
+                else if (s.Session is not null || s.Weekly is not null)
                 {
                     if (s.Session is { } session)
                     {

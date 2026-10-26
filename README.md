@@ -8,7 +8,8 @@ A PowerToys Command Palette **Dock band** that shows your Claude session (5 h) a
 
 - **Ring buttons** (one per quota): the ring fills to the % used and is colored by level: blue < 60 %, amber 60–84 %, red ≥ 85 %. Dock text can't be colored, so the ring carries it. Click to open the detail page (all limits, reset times); opening it refreshes if the data is older than 30 s.
 - **Timer button**: the 5-hour reset time. Click to **refresh now**. When a limit is maxed out, it switches to a countdown ("in 1 h 12 min").
-- **No data** (signed out, loading, offline): the rings are replaced by a single status button: gauge icon + "Sign in" / "Claude" / "Offline" (grey with "!" = sign in needed).
+- **Signed out**: the rings are replaced by a **Sign in** button (grey gauge with "!"). Left-click it to open a terminal running `claude`.
+- **No data** (loading, offline): the rings are replaced by a status button: "Claude" / "Offline".
 - **Right-click any button**: Refresh now / Open usage page / Open details / **Sign in with Claude Code**.
 - **Sign in with Claude Code** opens a terminal running `claude` (Windows Terminal if installed, otherwise PowerShell) so you can log in or let Claude Code renew its login. The band picks up the new login within 60 s. On the detail page, the "Sign in" row does the same when clicked. The extension only opens the terminal; it never handles the login itself.
 - Palette commands (Win+Alt+Space): **Claude usage**, **Refresh Claude usage**.
