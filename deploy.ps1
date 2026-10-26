@@ -72,7 +72,15 @@ Write-Host "dotnet OK, Developer Mode OK, platform $Platform, $Configuration"
 Stop-Extension
 
 Step "Building ($Configuration|$Platform). First build restores NuGet packages, give it a minute."
-& dotnet build $Project -c $Configuration -p:Platform=$Platform -nologo
+# Restore only this machine's runtime (win-x64 or win-arm64), not both: halves the download.
+$rid = "win-$($Platform.ToLowerInvariant())"
+& dotnet build $Project -c $Configuration -p:Platform=$Platform -p:RuntimeIdentifiers=$rid -nologo
+if ($LASTEXITCODE -ne 0) {
+    # Large package downloads sometimes get cut off on slow or VPN connections. Retry once;
+    # NuGet keeps everything that already finished, so the second run only fetches the rest.
+    Write-Host "`nBuild failed. Retrying once (downloads that finished are kept)..." -ForegroundColor Yellow
+    & dotnet build $Project -c $Configuration -p:Platform=$Platform -p:RuntimeIdentifiers=$rid -nologo
+}
 if ($LASTEXITCODE -ne 0) { throw "Build failed (exit $LASTEXITCODE). Paste the errors above to fix them." }
 
 # --- Find the package layout -------------------------------------------------
