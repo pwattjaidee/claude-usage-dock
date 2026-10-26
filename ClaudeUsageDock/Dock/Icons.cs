@@ -16,9 +16,9 @@ internal static class Icons
     public static readonly IconInfo GaugeSignIn = IconHelpers.FromRelativePath("Assets\\gauge-signin.png");
 
     // Segoe Fluent Icons glyphs.
-    public static readonly IconInfo Refresh = new("");
-    public static readonly IconInfo OpenInBrowser = new("");
-    public static readonly IconInfo Terminal = new("");
+    public static readonly IconInfo Refresh = new("\uE72C");
+    public static readonly IconInfo OpenInBrowser = new("\uE8A7");
+    public static readonly IconInfo Terminal = new("\uE756");
 
     // Ring gauges: one pre-rendered PNG per level x percent (Assets\Rings), created lazily and reused.
     // A new path per value also sidesteps the host's icon cache.
