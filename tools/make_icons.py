@@ -4,6 +4,7 @@ Usage (from the repo root):  python tools/make_icons.py
 
 Writes:
   ClaudeUsageDock/Assets/gauge-*.png          status gauge (theme-aware + alert colors + sign-in)
+  ClaudeUsageDock/Assets/band-icon-*.png      band icon for the Dock's "+" list (dial, light/dark Dock)
   ClaudeUsageDock/Assets/Rings/ring-<level>-<pct>.png   303 ring gauges: ok|warn|crit x 0..100 %
   ClaudeUsageDock/Assets/*Logo*.png, SplashScreen      MSIX package logos
 The ring track is a translucent grey so one image works on light and dark Docks.
@@ -86,6 +87,37 @@ def gauge(size, color, badge=None, pad=0.0):
     return img.resize((size, size), Image.LANCZOS)
 
 
+def dial(size, fg):
+    """Band icon (Dock's "+" list): ring split into green/yellow/red zones with a needle. fg = needle color."""
+    big = size * SS
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    c = big / 2
+    w = big * 0.16
+    r = big / 2 - big * 0.05
+
+    def seg(start, sweep, color):
+        d.arc([c - r, c - r, c + r, c + r], start=start, end=start + sweep, fill=color, width=int(w))
+        for a in (start, start + sweep):  # round caps
+            rad = math.radians(a)
+            x, y = c + (r - w / 2) * math.cos(rad), c + (r - w / 2) * math.sin(rad)
+            h = w / 2
+            d.ellipse([x - h, y - h, x + h, y + h], fill=color)
+
+    gap = 10
+    seg(135, 135 - gap, rgba(LEVELS["ok"]))
+    seg(270, 60 - gap, rgba(LEVELS["warn"]))
+    seg(330, 75 - gap, rgba(LEVELS["crit"]))
+    ang = math.radians(300)
+    nx, ny = c + r * 0.55 * math.cos(ang), c + r * 0.55 * math.sin(ang)
+    d.line([c, c, nx, ny], fill=fg, width=int(big * 0.09))
+    h = big * 0.045
+    d.ellipse([nx - h, ny - h, nx + h, ny + h], fill=fg)
+    hr = big * 0.09
+    d.ellipse([c - hr, c - hr, c + hr, c + hr], fill=fg)
+    return img.resize((size, size), Image.LANCZOS)
+
+
 def tile(w, h, name, frac=0.6):
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     g = int(min(w, h) * frac)
@@ -104,6 +136,8 @@ def main():
     gauge(64, rgba(LEVELS["warn"])).save(ASSETS / "gauge-warn.png", optimize=True)
     gauge(64, rgba(LEVELS["crit"])).save(ASSETS / "gauge-crit.png", optimize=True)
     gauge(64, rgba("ABABAB"), badge=rgba(LEVELS["warn"])).save(ASSETS / "gauge-signin.png", optimize=True)
+    dial(64, rgba("1A1A1A")).save(ASSETS / "band-icon-light.png", optimize=True)  # dark needle, light Dock
+    dial(64, rgba("F3F3F3")).save(ASSETS / "band-icon-dark.png", optimize=True)   # light needle, dark Dock
 
     tile(300, 300, "Square150x150Logo.scale-200.png")
     tile(88, 88, "Square44x44Logo.scale-200.png", 0.8)
