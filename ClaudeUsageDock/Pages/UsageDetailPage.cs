@@ -58,7 +58,7 @@ internal sealed partial class UsageDetailPage : ListPage
             items.Add(new ListItem(_terminal)
             {
                 Title = s.Message ?? "Sign in to Claude Code",
-                Subtitle = "Click to open Claude Code in a terminal. This page picks up the new sign-in by itself.",
+                Subtitle = "Click to sign in with Claude Code. The window closes by itself when you're done.",
                 Icon = Icons.GaugeSignIn,
             });
         }

@@ -27,7 +27,7 @@ public sealed partial class ClaudeUsageDockCommandsProvider : CommandProvider
             Name = "Open usage page",
             Icon = Icons.OpenInBrowser,
         };
-        var terminal = new OpenClaudeTerminalCommand();
+        var terminal = new OpenClaudeTerminalCommand(_monitor);
         var detail = new UsageDetailPage(_monitor, refresh, openUsage, terminal);
 
         // The dock band: [ring 5h] [ring 7d] [timer], or [status] [timer] when there's no data.
@@ -51,7 +51,7 @@ public sealed partial class ClaudeUsageDockCommandsProvider : CommandProvider
             new CommandItem(terminal)
             {
                 Title = "Sign in with Claude Code",
-                Subtitle = "Open a terminal running claude",
+                Subtitle = "Check or renew the login; the window closes when done",
             },
         ];
 

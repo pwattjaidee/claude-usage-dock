@@ -1,19 +1,27 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using ClaudeUsageDock.Core;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace ClaudeUsageDock;
 
 /// <summary>
-/// Opens a terminal running Claude Code, so you can sign in (or let it renew its login)
-/// without opening a terminal yourself. The extension only launches it; you do the login.
-/// Windows Terminal is used when installed, plain PowerShell otherwise. The window stays
-/// open after Claude Code exits so any error stays readable.
+/// Opens a terminal that checks the Claude Code sign-in (claude auth status), signs in only if
+/// needed (claude auth login), then closes itself. The extension watches Claude Code's
+/// credentials file and refreshes the band as soon as it changes. No message is sent to Claude,
+/// so this uses no quota and starts no 5-hour window. Windows Terminal if installed, else PowerShell.
 /// </summary>
 internal sealed partial class OpenClaudeTerminalCommand : InvokableCommand
 {
-    public OpenClaudeTerminalCommand()
+    private static readonly TimeSpan WatchFor = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan WatchEvery = TimeSpan.FromSeconds(2);
+
+    private readonly UsageMonitor _monitor;
+    private int _watching;
+
+    public OpenClaudeTerminalCommand(UsageMonitor monitor)
     {
+        _monitor = monitor;
         Id = Ids.OpenTerminal;
         Name = "Sign in with Claude Code";
         Icon = Icons.Terminal;
@@ -22,15 +30,12 @@ internal sealed partial class OpenClaudeTerminalCommand : InvokableCommand
     public override CommandResult Invoke()
     {
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var claude = FindClaude(home);
-
-        // PowerShell runs claude; -NoExit keeps the window if claude is missing or fails.
-        var psCommand = "& '" + claude.Replace("'", "''", StringComparison.Ordinal) + "'";
-        var psArgs = "-NoLogo -NoExit -Command \"" + psCommand + "\"";
+        var encoded = SignInScript.Encode(SignInScript.Build(FindClaude(home)));
+        var psArgs = "-NoLogo -NoProfile -ExecutionPolicy Bypass -EncodedCommand " + encoded;
 
         try
         {
-            Start("wt.exe", $"-d \"{home}\" --title \"Claude Code\" powershell.exe {psArgs}", home);
+            Start("wt.exe", $"-d \"{home}\" --title \"Claude Code sign-in\" powershell.exe {psArgs}", home);
         }
         catch (Win32Exception)
         {
@@ -41,13 +46,67 @@ internal sealed partial class OpenClaudeTerminalCommand : InvokableCommand
             }
             catch (Win32Exception)
             {
-                return CommandResult.ShowToast("Couldn't open a terminal. Run 'claude' in PowerShell yourself.");
+                return CommandResult.ShowToast("Couldn't open a terminal. Run 'claude auth login' in PowerShell yourself.");
             }
         }
 
-        // The band re-checks the credentials file every 60 s while signed out, so it
-        // picks up the new login by itself once you finish in the terminal.
+        WatchCredentials();
         return CommandResult.Dismiss();
+    }
+
+    /// <summary>
+    /// Refresh the band the moment Claude Code rewrites its credentials file, instead of waiting
+    /// for the 60 s signed-out re-check. Watches the file's timestamp only, never its contents.
+    /// </summary>
+    private void WatchCredentials()
+    {
+        if (Interlocked.Exchange(ref _watching, 1) == 1)
+        {
+            return; // already watching from an earlier click
+        }
+
+        var path = CredentialReader.CredentialsPath;
+        var before = Stamp(path);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var until = DateTime.UtcNow + WatchFor;
+                while (DateTime.UtcNow < until)
+                {
+                    await Task.Delay(WatchEvery).ConfigureAwait(false);
+                    if (Stamp(path) != before)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false); // let the write finish
+                        _monitor.RequestRefresh();
+                        return;
+                    }
+                }
+
+                // No change (the login was already valid): one refresh so the band catches up anyway.
+                _monitor.RequestRefresh();
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _watching, 0);
+            }
+        });
+    }
+
+    private static DateTime Stamp(string path)
+    {
+        try
+        {
+            return File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+        }
+        catch (IOException)
+        {
+            return DateTime.MinValue;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return DateTime.MinValue;
+        }
     }
 
     /// <summary>The native installer's location first, then whatever "claude" resolves to on PATH (WinGet, npm).</summary>

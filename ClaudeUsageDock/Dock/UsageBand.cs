@@ -91,7 +91,7 @@ internal sealed partial class SignInBandItem : ListItem
         : base(terminal)
     {
         Title = "Sign in";
-        Subtitle = "Open Claude Code";
+        Subtitle = "Click to sign in";
         Icon = Icons.GaugeSignIn;
         MoreCommands = [new CommandContextItem(detail), new CommandContextItem(refresh), new CommandContextItem(openUsage)];
     }
