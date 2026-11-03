@@ -10,9 +10,9 @@ namespace ClaudeUsageDock;
 /// </summary>
 internal sealed partial class UsageDetailPage : ListPage
 {
-    private static readonly OptionalColor OkBg = ColorHelpers.FromRgb(0x4C, 0xC2, 0xFF);
-    private static readonly OptionalColor WarnBg = ColorHelpers.FromRgb(0xFF, 0xB5, 0x47);
-    private static readonly OptionalColor CritBg = ColorHelpers.FromRgb(0xFF, 0x6F, 0x61);
+    private static readonly OptionalColor OkBg = ColorHelpers.FromRgb(0x3F, 0xBF, 0x5F); // green, matches the rings
+    private static readonly OptionalColor WarnBg = ColorHelpers.FromRgb(0xE8, 0xB2, 0x1E); // yellow
+    private static readonly OptionalColor CritBg = ColorHelpers.FromRgb(0xF0, 0x56, 0x4A); // red
     private static readonly OptionalColor TagText = ColorHelpers.FromRgb(0x14, 0x14, 0x14);
 
     private readonly UsageMonitor _monitor;

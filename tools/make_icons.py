@@ -7,7 +7,7 @@ Writes:
   ClaudeUsageDock/Assets/Rings/ring-<level>-<pct>.png   303 ring gauges: ok|warn|crit x 0..100 %
   ClaudeUsageDock/Assets/*Logo*.png, SplashScreen      MSIX package logos
 The ring track is a translucent grey so one image works on light and dark Docks.
-Colors match the design canvas: ok #4CC2FF, warn #FFB547, crit #FF6F61.
+Level colors (traffic light): ok #3FBF5F green, warn #E8B21E yellow, crit #F0564A red.
 """
 import math
 from pathlib import Path
@@ -18,7 +18,7 @@ ASSETS = ROOT / "ClaudeUsageDock" / "Assets"
 RINGS = ASSETS / "Rings"
 SS = 8  # supersampling
 
-LEVELS = {"ok": "4CC2FF", "warn": "FFB547", "crit": "FF6F61"}
+LEVELS = {"ok": "3FBF5F", "warn": "E8B21E", "crit": "F0564A"}
 
 
 def rgba(h, a=255):
@@ -101,9 +101,9 @@ def main():
 
     gauge(64, rgba("1A1A1A")).save(ASSETS / "gauge-for-light-theme.png", optimize=True)
     gauge(64, rgba("F3F3F3")).save(ASSETS / "gauge-for-dark-theme.png", optimize=True)
-    gauge(64, rgba("FFB547")).save(ASSETS / "gauge-warn.png", optimize=True)
-    gauge(64, rgba("FF6F61")).save(ASSETS / "gauge-crit.png", optimize=True)
-    gauge(64, rgba("ABABAB"), badge=rgba("FFB547")).save(ASSETS / "gauge-signin.png", optimize=True)
+    gauge(64, rgba(LEVELS["warn"])).save(ASSETS / "gauge-warn.png", optimize=True)
+    gauge(64, rgba(LEVELS["crit"])).save(ASSETS / "gauge-crit.png", optimize=True)
+    gauge(64, rgba("ABABAB"), badge=rgba(LEVELS["warn"])).save(ASSETS / "gauge-signin.png", optimize=True)
 
     tile(300, 300, "Square150x150Logo.scale-200.png")
     tile(88, 88, "Square44x44Logo.scale-200.png", 0.8)
