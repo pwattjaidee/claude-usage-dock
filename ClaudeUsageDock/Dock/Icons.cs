@@ -15,6 +15,9 @@ internal static class Icons
     public static readonly IconInfo GaugeCrit = IconHelpers.FromRelativePath("Assets\\gauge-crit.png");
     public static readonly IconInfo GaugeSignIn = IconHelpers.FromRelativePath("Assets\\gauge-signin.png");
 
+    // Icon for the band itself, shown in the Dock's "+" (add band) list. Swap these two files to customize.
+    public static readonly IconInfo BandIcon = IconHelpers.FromRelativePaths("Assets\\band-icon-light.png", "Assets\\band-icon-dark.png");
+
     // Segoe Fluent Icons glyphs.
     public static readonly IconInfo Refresh = new("\uE72C");
     public static readonly IconInfo OpenInBrowser = new("\uE8A7");

@@ -157,7 +157,10 @@ internal sealed partial class UsageBandController : IDisposable
         _reset = new ResetBandItem(refresh, detail, openUsage, terminal);
 
         _current = [_status, _reset];
-        Band = new WrappedDockItem(_current, Ids.Band, "Claude usage");
+        Band = new WrappedDockItem(_current, Ids.Band, "Claude usage")
+        {
+            Icon = Icons.BandIcon, // shown in the Dock's "+" (add band) list
+        };
 
         _monitor.Changed += OnChanged;
         _tick = new Timer(_ => Render(), null, Config.UiTick, Config.UiTick);
